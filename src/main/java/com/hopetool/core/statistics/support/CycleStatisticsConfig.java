@@ -1,6 +1,7 @@
 package com.hopetool.core.statistics.support;
 
 import com.hopetool.core.column.support.SFunction;
+import com.hopetool.core.datetime.LocalDateTimeUtils;
 import com.hopetool.core.datetime.support.DateTimeUnit;
 import com.hopetool.core.lang.AssertUtils;
 import com.hopetool.core.statistics.DataStatisticsUtils;
@@ -80,7 +81,7 @@ public class CycleStatisticsConfig<T, V, M> extends AbstractStatisticsConfig<T> 
      * @return 循环统计配置
      */
     public CycleStatisticsConfig<T, V, M> buildStatisticsDateTime(DateTimeUnit dateTimeUnit) {
-        LocalDateTime[] timePeriod = DataStatisticsUtils.generateTimePeriodBasedOnTheCurrentTime(dateTimeUnit, 0);
+        LocalDateTime[] timePeriod = LocalDateTimeUtils.generateTimePeriodBasedOnTheCurrentTime(dateTimeUnit, 0);
         return buildStatisticsDateTime(dateTimeUnit, timePeriod[0], timePeriod[1]);
     }
 

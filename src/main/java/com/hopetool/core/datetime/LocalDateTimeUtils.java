@@ -1,6 +1,7 @@
 package com.hopetool.core.datetime;
 
 
+import com.hopetool.core.array.ArraysUtils;
 import com.hopetool.core.datetime.support.DatePattern;
 import com.hopetool.core.datetime.support.DateTimeUnit;
 import com.hopetool.core.datetime.support.Month;
@@ -304,6 +305,34 @@ public class LocalDateTimeUtils {
         return TemporalAccessorUtil.isIn(of(compareDateTime), startTime, endTime);
     }
 
+    /**
+     * 判断当前时间是否在该时间范围内
+     *
+     * @param compareDateTime 待比较的时间
+     * @param timeFrame       时间区间
+     * @return 如果待比较的时间在指定的时间范围内，则返回true；否则返回false
+     */
+    public static boolean isBetween(LocalDateTime compareDateTime, LocalDateTime[] timeFrame) {
+        if (ArraysUtils.isEmpty(timeFrame) || timeFrame.length < 2) {
+            return false;
+        }
+        return TemporalAccessorUtil.isIn(compareDateTime, timeFrame[0], timeFrame[1]);
+    }
+
+
+
+    /**
+     * 判断给定的日期是否在指定的时间段内
+     *
+     * @param compareDateTime 待比较的日期时间对象
+     * @param timeFrame       时间区间
+     * @return 若给定的日期在指定时间段内，则返回true；否则返回false
+     */
+    public static boolean isBetween(Date compareDateTime, LocalDateTime[] timeFrame) {
+        return isBetween(of(compareDateTime), timeFrame);
+    }
+
+
 
     /**
      * <p>
@@ -329,9 +358,9 @@ public class LocalDateTimeUtils {
      * @param dateTimeUnit 时间单位
      * @return 开始时间
      */
-    public static LocalDateTime afterOffsetBeginTimeByDateTimeUnit(LocalDateTime benchmark, int offset, DateTimeUnit dateTimeUnit) {
-        LocalDateTime afterOffsetDateTime = offset(benchmark, offset, dateTimeUnit);
-        return beginTimeByDateTimeUnit(afterOffsetDateTime, dateTimeUnit);
+    public static LocalDateTime offsetAndBeginTimeByDateTimeUnit(LocalDateTime benchmark, int offset, DateTimeUnit dateTimeUnit) {
+        LocalDateTime offsetDateTime = offset(benchmark, offset, dateTimeUnit);
+        return beginTimeByDateTimeUnit(offsetDateTime, dateTimeUnit);
     }
 
 
@@ -359,9 +388,9 @@ public class LocalDateTimeUtils {
      * @param dateTimeUnit 时间单位
      * @return 结束时间
      */
-    public static LocalDateTime afterOffsetEndTimeByDateTimeUnit(LocalDateTime benchmark, int offset, DateTimeUnit dateTimeUnit) {
-        LocalDateTime afterOffsetDateTime = offset(benchmark, offset, dateTimeUnit);
-        return endTimeByDateTimeUnit(afterOffsetDateTime, dateTimeUnit);
+    public static LocalDateTime offsetAndEndTimeByDateTimeUnit(LocalDateTime benchmark, int offset, DateTimeUnit dateTimeUnit) {
+        LocalDateTime offsetDateTime = offset(benchmark, offset, dateTimeUnit);
+        return endTimeByDateTimeUnit(offsetDateTime, dateTimeUnit);
     }
 
 
@@ -952,4 +981,53 @@ public class LocalDateTimeUtils {
         return parse(text, formatter);
     }
 
+
+
+    /**
+     * 根据偏移量和当前时间和单位获取开始时间和结束时间
+     * <li>1. 如果offset > 0,则"返回结果[0]->开始时间"为 now根据datetimeUnit
+     * 调用 {@link LocalDateTimeUtils#beginTimeByDateTimeUnit}获取起点时间,
+     * "返回结果[1]->结束时间"为 now先offset往未来偏移指定datetimeUnit时间,
+     * 然后获取偏移后的时间根据datetimeUnit获取终点时间
+     * {@link LocalDateTimeUtils#offsetAndEndTimeByDateTimeUnit}
+     * <p>
+     * 例如: now: 2024-03-01T10:00:00  offset: 1  unit: year
+     * 返回: [2024-01-01T00:00, 2025-12-31T23:59:59.999999999]
+     * <li>2. 如果offset < 0,则"返回结果[0]->开始时间"为 now
+     * 先offset往过去偏移指定datetimeUnit时间,然后获取偏移后的时间根据datetimeUnit
+     * 获取起点时间 {@link LocalDateTimeUtils#offsetAndBeginTimeByDateTimeUnit},
+     * "返回结果[1]->结束时间"为 now根据datetimeUnit调用
+     * {@link LocalDateTimeUtils#endTimeByDateTimeUnit}获取终点时间
+     * <p>
+     * 例如: now: 2024-03-01T10:00:00  offset: -1  unit: year
+     * 返回: [2023-01-01T00:00, 2024-12-31T23:59:59.999999999]
+     * <li>3. 如果offset = 0,则"返回结果[0]->开始时间"为 now根据datetimeUnit
+     * 调用{@link LocalDateTimeUtils#beginTimeByDateTimeUnit}
+     * 获取起点时间,"返回结果[1]->结束时间"为 now根据datetimeUnit
+     * 调用{@link LocalDateTimeUtils#endTimeByDateTimeUnit}获取终点时间
+     * <p>
+     * 例如: now: 2024-03-01T10:00:00  offset: 0  unit: year
+     * 返回: [2024-01-01T00:00, 2024-12-31T23:59:59.999999999]
+     *
+     * @param dateTimeUnit 单位
+     * @param offset       偏移量
+     * @return 开始时间和结束时间
+     */
+    public static LocalDateTime[] generateTimePeriodBasedOnTheCurrentTime(DateTimeUnit dateTimeUnit, int offset) {
+        LocalDateTime now = LocalDateTime.now();
+        // 过去
+        if (offset < 0) {
+            LocalDateTime beginDateTime = LocalDateTimeUtils.offsetAndBeginTimeByDateTimeUnit(now, offset, dateTimeUnit);
+            LocalDateTime endDateTime = LocalDateTimeUtils.endTimeByDateTimeUnit(now, dateTimeUnit);
+            return new LocalDateTime[]{beginDateTime, endDateTime};
+        }
+        // 未来
+        if (offset > 0) {
+            LocalDateTime beginDateTime = LocalDateTimeUtils.beginTimeByDateTimeUnit(now, dateTimeUnit);
+            LocalDateTime endDateTime = LocalDateTimeUtils.offsetAndEndTimeByDateTimeUnit(now, offset, dateTimeUnit);
+            return new LocalDateTime[]{beginDateTime, endDateTime};
+        }
+        // 当前
+        return new LocalDateTime[]{LocalDateTimeUtils.beginTimeByDateTimeUnit(now, dateTimeUnit), LocalDateTimeUtils.endTimeByDateTimeUnit(now, dateTimeUnit)};
+    }
 }

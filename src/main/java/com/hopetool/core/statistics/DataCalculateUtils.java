@@ -2,6 +2,7 @@ package com.hopetool.core.statistics;
 
 
 import com.hopetool.core.statistics.support.CalculationMethodEnum;
+import com.hopetool.core.text.StrUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -42,7 +43,7 @@ public class DataCalculateUtils {
      * @return 转换后的百分比BigDecimal值
      */
     public static BigDecimal valueToPercentageConversion(BigDecimal value) {
-        return divide(value, newBigDecimal("100"), 2, RoundingMode.HALF_UP);
+        return multiply(value, newBigDecimal("100"));
     }
 
     /**
@@ -56,22 +57,26 @@ public class DataCalculateUtils {
     }
 
     /**
-     * 将百分比转换为数值
+     * 将百分比转换为数值 100 -> 1    98 -> 0.98    25.43-> 0.2543
      *
      * @param percentage 代表百分比的BigDecimal
      * @return 转换后的BigDecimal数值
      */
     public static BigDecimal percentageToValueConversion(BigDecimal percentage) {
-        return multiply(percentage, newBigDecimal("100"));
+        return divideIgnoreZero(percentage, newBigDecimal("100"), percentage.scale() + 2, RoundingMode.HALF_UP);
     }
 
     /**
-     * 将百分比转换为数值
+     * 将百分比转换为数值 "100%" -> 1   "100" ->1   "98%" -> 0.98   "25.43%" -> 0.2543
      *
      * @param percentage 代表百分比的BigDecimal
      * @return 转换后的BigDecimal数值
      */
     public static BigDecimal percentageToValueConversion(String percentage) {
+        if (percentage.endsWith("%")) {
+            return percentageToValueConversion(new BigDecimal(
+                    StrUtils.removeSuffix(percentage, "%")));
+        }
         return percentageToValueConversion(new BigDecimal(percentage));
     }
 
@@ -322,5 +327,22 @@ public class DataCalculateUtils {
             default:
                 return null;
         }
+    }
+
+
+    /**
+     * 计算同比或者环比
+     *
+     * @param thisValue 当前值
+     * @param lastValue 比值
+     * @return 计算结果
+     */
+    public static String calculateYoyOrMom(BigDecimal thisValue, BigDecimal lastValue) {
+        return lastValue.doubleValue() == 0 ?
+                (thisValue.doubleValue() == 0 ? "0%" : "100%") :
+                thisValue.subtract(lastValue)
+                        .divide(lastValue, 2, RoundingMode.HALF_EVEN)
+                        .multiply(new BigDecimal(100))
+                        .stripTrailingZeros().toPlainString() + "%";
     }
 }

@@ -209,4 +209,22 @@ public class StrUtils {
         Arrays.fill(result, c);
         return new String(result);
     }
+
+    /**
+     * 去掉指定后缀
+     *
+     * @param str    字符串
+     * @param suffix 后缀
+     * @return 切掉后的字符串，若后缀不是 suffix， 返回原字符串
+     */
+    public static String removeSuffix(String str, String suffix) {
+        if (isBlank(str) || isBlank(suffix)) {
+            return str;
+        }
+        if (str.endsWith(suffix)) {
+            return sub(str, 0, str.length() - suffix.length());
+        }
+        return str;
+    }
+
 }

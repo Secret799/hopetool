@@ -5,7 +5,6 @@ import com.hopetool.core.collection.ListUtils;
 import com.hopetool.core.column.support.SFunction;
 import com.hopetool.core.datetime.LocalDateTimeDivisionUtils;
 import com.hopetool.core.datetime.LocalDateTimeUtils;
-import com.hopetool.core.datetime.support.DateTimeUnit;
 import com.hopetool.core.datetime.support.LocalDateTimeDivisionDomain;
 import com.hopetool.core.lang.AssertUtils;
 import com.hopetool.core.set.SetUtils;
@@ -29,33 +28,6 @@ import java.util.stream.Stream;
  */
 @SuppressWarnings("DuplicatedCode")
 public class DataStatisticsUtils {
-
-    /**
-     * 根据偏移量和单位获取开始时间和结束时间
-     *
-     * @param dateTimeUnit 单位
-     * @param offset       偏移量
-     * @return 开始时间和结束时间
-     */
-    public static LocalDateTime[] generateTimePeriodBasedOnTheCurrentTime(DateTimeUnit dateTimeUnit, int offset) {
-        LocalDateTime now = LocalDateTime.now();
-        // 过去
-        if (offset < 0) {
-            LocalDateTime beginDateTime = LocalDateTimeUtils.afterOffsetBeginTimeByDateTimeUnit(now, offset, dateTimeUnit);
-            LocalDateTime endDateTime = LocalDateTimeUtils.endTimeByDateTimeUnit(now, dateTimeUnit);
-            return new LocalDateTime[]{beginDateTime, endDateTime};
-        }
-        // 未来
-        if (offset > 0) {
-            LocalDateTime beginDateTime = LocalDateTimeUtils.beginTimeByDateTimeUnit(now, dateTimeUnit);
-            LocalDateTime endDateTime = LocalDateTimeUtils.afterOffsetEndTimeByDateTimeUnit(now, offset, dateTimeUnit);
-            return new LocalDateTime[]{beginDateTime, endDateTime};
-        }
-        // 当前
-        return new LocalDateTime[]{LocalDateTimeUtils.beginTimeByDateTimeUnit(now, dateTimeUnit),
-                LocalDateTimeUtils.endTimeByDateTimeUnit(now, dateTimeUnit)};
-    }
-
 
     /**
      * 周期统计方法
@@ -152,7 +124,7 @@ public class DataStatisticsUtils {
             if (!unprocessedTagMemo.isEmpty()) {
                 unprocessedTagMemo.forEach(dimensionCode ->
                         details.add(new DataStatisticsItemDetail().setTagCode(dimensionCode.toString())
-                        .setTagName(config.getMultidimensional().getTagMemo().get(dimensionCode)).setValue("0")));
+                                .setTagName(config.getMultidimensional().getTagMemo().get(dimensionCode)).setValue("0")));
             }
             // 将统计数据细节列表添加到当前时间周期的统计数据结果对象中，并添加到结果对象中
             result.addDetail(currTimeFrameStatisticsResult.setDetails(details));
