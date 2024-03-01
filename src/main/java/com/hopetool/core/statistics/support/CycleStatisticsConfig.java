@@ -81,7 +81,7 @@ public class CycleStatisticsConfig<T, V, M> extends AbstractStatisticsConfig<T> 
      * @return 循环统计配置
      */
     public CycleStatisticsConfig<T, V, M> buildStatisticsDateTime(DateTimeUnit dateTimeUnit) {
-        LocalDateTime[] timePeriod = LocalDateTimeUtils.generateTimePeriodBasedOnTheCurrentTime(dateTimeUnit, 0);
+        LocalDateTime[] timePeriod = LocalDateTimeUtils.generateTimePeriodByBenchmarkDateTime(dateTimeUnit, 0);
         return buildStatisticsDateTime(dateTimeUnit, timePeriod[0], timePeriod[1]);
     }
 
