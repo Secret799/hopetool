@@ -122,11 +122,11 @@ public enum Month {
      */
     public static Month of(int calendarMonthIntValue) {
         if (calendarMonthIntValue >= ENUMS.length || calendarMonthIntValue < 0) {
-            return null;
+            throw new IllegalArgumentException("Illegal month value, value range from 0 to 11");
         }
         return ENUMS[calendarMonthIntValue];
     }
-    
+
     /**
      * {@link java.time.Month}转换为Month对象
      *
@@ -225,5 +225,48 @@ public enum Month {
      */
     public String getDisplayName(TextStyle style, Locale locale) {
         return toJdkMonth().getDisplayName(style, locale);
+    }
+
+
+    /**
+     * Gets the length of this month in days.
+     * <p>
+     * This takes a flag to determine whether to return the length for a leap year or not.
+     * <p>
+     * February has 28 days in a standard year and 29 days in a leap year.
+     * April, June, September and November have 30 days.
+     * All other months have 31 days.
+     *
+     * @param leapYear true if the length is required for a leap year
+     * @return the length of this month in days, from 28 to 31
+     */
+    public int length(boolean leapYear) {
+        switch (this) {
+            case FEBRUARY:
+                return (leapYear ? 29 : 28);
+            case APRIL:
+            case JUNE:
+            case SEPTEMBER:
+            case NOVEMBER:
+                return 30;
+            default:
+                return 31;
+        }
+    }
+
+    /**
+     * Returns the month-of-year that is the specified number of quarters after this one.
+     * <p>
+     * The calculation rolls around the end of the year from December to January.
+     * The specified period may be negative.
+     * <p>
+     * This instance is immutable and unaffected by this method call.
+     *
+     * @param months the months to add, positive or negative
+     * @return the resulting month, not null
+     */
+    public Month plus(long months) {
+        int amount = (int) (months % 12);
+        return ENUMS[(ordinal() + (amount + 12)) % 12];
     }
 }

@@ -696,7 +696,7 @@ public class LocalDateTimeUtils {
      * @return 季度的开始时间
      */
     public static LocalDateTime beginOfQuarter(LocalDateTime benchmarkTime) {
-        Month month = Month.of(benchmarkTime.getMonth().firstMonthOfQuarter().getValue());
+        Month month = Month.of(benchmarkTime.getMonth().firstMonthOfQuarter());
         AssertUtils.notNull(month, "The month of the given time is invalid.");
         return LocalDateTime.of(LocalDate.of(benchmarkTime.getYear(), month.getValue(), 1), LocalTime.MIN);
     }
@@ -724,12 +724,12 @@ public class LocalDateTimeUtils {
         // 获取给定基准时间的日期部分
         LocalDate localDate = benchmarkTime.toLocalDate();
         // 获取给定基准时间所在季度的下一个月，即未来的两个月
-        java.time.Month month = java.time.Month.of(localDate.getMonth().firstMonthOfQuarter().getValue()).plus(2L);
+        Month month = Month.of(localDate.getMonth().firstMonthOfQuarter()).plus(2L);
         // 通过给定季度的年份、月份和月份长度创建一个结束时间的LocalDateTime对象
         if (truncateMillisecond) {
-            return LocalDateTime.of(LocalDate.of(localDate.getYear(), month, month.length(localDate.isLeapYear())), LocalTime.of(23, 59, 59));
+            return LocalDateTime.of(LocalDate.of(localDate.getYear(), month.getValueBaseOne(), month.length(localDate.isLeapYear())), LocalTime.of(23, 59, 59));
         }
-        return LocalDateTime.of(LocalDate.of(localDate.getYear(), month, month.length(localDate.isLeapYear())), LocalTime.MAX);
+        return LocalDateTime.of(LocalDate.of(localDate.getYear(), month.getValueBaseOne(), month.length(localDate.isLeapYear())), LocalTime.MAX);
     }
 
     /**
